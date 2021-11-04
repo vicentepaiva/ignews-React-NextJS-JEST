@@ -1,7 +1,7 @@
 ## 🙂 Demonstration
 
-<img alt="ignews" title="ignews" src="/ignews.png"/>
-<img alt="demonstration" title="demonstrario" src="/demonstration.png"/>
+<img alt="ignews" title="ignews" src="/public/images/ignews.png"/>
+<img alt="demonstration" title="demonstrario" src="/public/images/demonstration.png"/>
 
 <p align="center">
   Get the las news on ReactJs
