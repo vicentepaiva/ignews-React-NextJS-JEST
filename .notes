@@ -1,5 +1,0 @@
-create nextjs-app 
-
-yarn add typescript @types/react @types/node -D
-
-run a yarn dev - to create the files tsconfig.json and nex-env.ts
