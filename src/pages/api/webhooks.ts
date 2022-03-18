@@ -1,7 +1,9 @@
 import { NextApiRequest, NextApiResponse } from "next";
 import { Readable } from "stream";
 import Stripe from "stripe";
+
 import { stripe } from "../../services/stripe";
+
 import { saveSubscription } from "./_lib/manageSubscription";
 
 async function buffer(readable: Readable) {
@@ -26,7 +28,7 @@ const relevantEvents = new Set([
   "customer.subscription.deleted",
 ]);
 
-export default async (req: NextApiRequest, res: NextApiResponse) => {
+async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method === "POST") {
     const buf = await buffer(req);
     const secret = req.headers["stripe-signature"];
@@ -45,13 +47,10 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
 
     const { type } = event;
 
-    console.log(type);
-
-    try {
-      if (relevantEvents.has(type)) {
+    if (relevantEvents.has(type)) {
+      try {
         switch (type) {
           case "customer.subscription.updated":
-            break;
           case "customer.subscription.deleted":
             const subscription = event.data.object as Stripe.Subscription;
 
@@ -71,14 +70,13 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
               checkoutSession.customer.toString(),
               true
             );
-
             break;
           default:
             throw new Error("Unhandled event.");
         }
+      } catch (err) {
+        return res.json(`Webhook handler failed.`);
       }
-    } catch (err) {
-      return res.json({ error: "Webhook handler failed." });
     }
 
     res.json({ received: true });
@@ -86,4 +84,6 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
     res.setHeader("Allow", "POST");
     res.status(405).end("Method not allowed");
   }
-};
+}
+
+export default handler;

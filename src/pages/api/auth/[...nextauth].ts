@@ -1,18 +1,45 @@
-import { query as q } from "faunadb";
 import NextAuth from "next-auth";
-import Providers from "next-auth/providers";
+import GithubProvider from "next-auth/providers/github";
+import { query as q } from "faunadb";
+
 import { fauna } from "../../../services/fauna";
 
 export default NextAuth({
   providers: [
-    Providers.GitHub({
+    GithubProvider({
       clientId: process.env.GITHUB_CLIENT_ID,
       clientSecret: process.env.GITHUB_CLIENT_SECRET,
-      scope: "read:user",
+      authorization: {
+        params: {
+          scope: "read:user",
+        },
+      },
     }),
   ],
+  secret: process.env.NEXTAUTH_SECRET,
   callbacks: {
-    async session(session) {
+    async signIn({ user }) {
+      const { email } = user;
+
+      try {
+        await fauna.query(
+          q.If(
+            q.Not(
+              q.Exists(
+                q.Match(q.Index("user_by_email"), q.Casefold(user.email))
+              )
+            ),
+            q.Create(q.Collection("users"), { data: { email } }),
+            q.Get(q.Match(q.Index("user_by_email"), q.Casefold(user.email)))
+          )
+        );
+
+        return true;
+      } catch {
+        return false;
+      }
+    },
+    async session({ session }) {
       try {
         const userActiveSubscription = await fauna.query(
           q.Get(
@@ -39,31 +66,7 @@ export default NextAuth({
           activeSubscription: userActiveSubscription,
         };
       } catch {
-        return {
-          ...session,
-          activeSubscription: null,
-        };
-      }
-    },
-
-    async signIn(user, account, profile) {
-      const { email } = user;
-
-      try {
-        await fauna.query(
-          q.If(
-            q.Not(
-              q.Exists(
-                q.Match(q.Index("user_by_email"), q.Casefold(user.email))
-              )
-            ),
-            q.Create(q.Collection("users"), { data: { email } }),
-            q.Get(q.Match(q.Index("user_by_email"), q.Casefold(user.email)))
-          )
-        );
-        return true;
-      } catch {
-        return false;
+        return { ...session, activeSubscription: null };
       }
     },
   },

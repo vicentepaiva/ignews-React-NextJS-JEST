@@ -1,10 +1,11 @@
-import { query as q } from "faunadb";
 import { NextApiRequest, NextApiResponse } from "next";
-import { getSession } from "next-auth/client";
-import { fauna } from "../../services/fauna";
-import { stripe } from "../../services/stripe";
+import { getSession } from "next-auth/react";
+import { query as q } from "faunadb";
 
-type User = {
+import { stripe } from "../../services/stripe";
+import { fauna } from "../../services/fauna";
+
+type UserType = {
   ref: {
     id: string;
   };
@@ -13,12 +14,12 @@ type User = {
   };
 };
 
-export default async (req: NextApiRequest, res: NextApiResponse) => {
+async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method === "POST") {
     const session = await getSession({ req });
 
-    const user = await fauna.query<User>(
-      q.Get(q.Match(q.Index("user_by_email"), session.user.email))
+    const user = await fauna.query<UserType>(
+      q.Get(q.Match(q.Index("user_by_email"), q.Casefold(session.user.email)))
     );
 
     let customerId = user.data.stripe_customer_id;
@@ -28,6 +29,7 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
         email: session.user.email,
         // metadata
       });
+
       await fauna.query(
         q.Update(q.Ref(q.Collection("users"), user.ref.id), {
           data: {
@@ -35,6 +37,7 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
           },
         })
       );
+
       customerId = stripeCustomer.id;
     }
 
@@ -42,7 +45,7 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
       customer: customerId,
       payment_method_types: ["card"],
       billing_address_collection: "required",
-      line_items: [{ price: "price_1Iqmo5FWbIUK0S7vGDt6CtJU", quantity: 1 }],
+      line_items: [{ price: "price_1KE1QZDNXuuaLtdtIuXSAuei", quantity: 1 }],
       mode: "subscription",
       allow_promotion_codes: true,
       success_url: process.env.STRIPE_SUCCESS_URL,
@@ -54,4 +57,6 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
     res.setHeader("Allow", "POST");
     res.status(405).end("Method not allowed");
   }
-};
+}
+
+export default handler;

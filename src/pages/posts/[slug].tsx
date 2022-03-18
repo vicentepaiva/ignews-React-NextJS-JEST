@@ -1,24 +1,26 @@
 import { GetServerSideProps } from "next";
-import { getSession } from "next-auth/client";
+import { getSession } from "next-auth/react";
 import Head from "next/head";
 import { RichText } from "prismic-dom";
+
 import { getPrismicClient } from "../../services/prismic";
+
 import styles from "./post.module.scss";
 
-interface PostProps {
+type PostProps = {
   post: {
     slug: string;
     title: string;
     content: string;
     updatedAt: string;
   };
-}
+};
 
 export default function Post({ post }: PostProps) {
   return (
     <>
       <Head>
-        <title>{post.title} | Ignews</title>
+        <title>{post.title} | ig.news</title>
       </Head>
 
       <main className={styles.container}>
@@ -53,10 +55,10 @@ export const getServerSideProps: GetServerSideProps = async ({
 
   const prismic = getPrismicClient(req);
 
-  const response = await prismic.getByUID("post", String(slug), {});
+  const response = await prismic.getByUID<any>("post", String(slug), {});
 
   const post = {
-    slug,
+    slug: response.uid,
     title: RichText.asText(response.data.title),
     content: RichText.asHtml(response.data.content),
     updatedAt: new Date(response.last_publication_date).toLocaleDateString(

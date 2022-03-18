@@ -1,7 +1,7 @@
 .container {
   max-width: 1120px;
-  margin: 0 auto;
   padding: 0 2rem;
+  margin: 0 auto;
 }
 
 .posts {
@@ -12,29 +12,33 @@
     display: block;
 
     & + a {
-      margin-top: 2rem;
       padding-top: 2rem;
-      border-top: 1px solid var(--gray-700);
+      border-top: 2px solid var(--gray-700);
+      margin-top: 2rem;
     }
 
     time {
-      font-size: 1rem;
       display: flex;
       align-items: center;
+
+      font-size: 1rem;
       color: var(--gray-300);
     }
 
     strong {
       display: block;
-      font-size: 1.5rem;
       margin-top: 1rem;
+
+      font-size: 1.5rem;
       line-height: 2rem;
+
       transition: color 0.2s;
     }
 
     p {
-      color: var(--gray-300);
       margin-top: 0.5rem;
+
+      color: var(--gray-300);
       line-height: 1.625rem;
     }
 

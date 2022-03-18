@@ -1,4 +1,5 @@
 import { query as q } from "faunadb";
+
 import { fauna } from "../../../services/fauna";
 import { stripe } from "../../../services/stripe";
 
@@ -15,8 +16,6 @@ export async function saveSubscription(
   );
 
   const subscription = await stripe.subscriptions.retrieve(subscriptionId);
-
-  console.log(subscription);
 
   const subscriptionData = {
     id: subscription.id,
