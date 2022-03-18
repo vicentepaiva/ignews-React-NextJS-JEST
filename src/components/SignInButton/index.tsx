@@ -4,12 +4,12 @@ import {
     signIn,
     signOut,
     useSession, // hook que retorna informações se o usuário está logado ou não
-} from "next-auth/client";
+} from "next-auth/react";
 
 import styles from "./styles.module.scss";
 
 export function SignInButton() {
-    const [session] = useSession();
+    const { data: session } = useSession();
 
     return session ? (
         <button
