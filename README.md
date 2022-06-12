@@ -20,6 +20,6 @@
 
 <div align="center">
   <sub> Made with 💖 by
-    <a href="https://github.com/SilvioFelix32">Silvio Félix.
+    <a href="https://github.com/VicentePaiva">Vicente Paiva.
   </sub>
 </div>
